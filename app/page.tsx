@@ -5,8 +5,9 @@ import {redirect} from "next/navigation";
 export default async function Page() {
     const session = await getServerSession();
 
+
     if (session) {
-        redirect("/storage");
+        redirect(process.env.NEXTAUTH_URL + "/storage");
     }
 return <StartPage />;
 }

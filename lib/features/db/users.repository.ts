@@ -12,3 +12,14 @@ export async function createUser(name?: string, password?: string, email?: strin
   `;
 }
 
+export async function findUser(email?: string) {
+    if (!email) {
+        throw new Error("Email is required");
+    }
+
+    const result = await sql`
+    SELECT * FROM users WHERE email = ${email}
+  `;
+    return result[0] || null;
+}
+

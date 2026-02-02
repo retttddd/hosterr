@@ -5,19 +5,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeOff } from "lucide-react"
+import {signIn} from "next-auth/react";
+import {useRouter} from "next/router";
+import {toast} from "sonner";
+
 export function LoginCard() {
+    //const router = useRouter();
     const [show, setShow] = React.useState(false)
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         const form = e.currentTarget
-        const login = form.login.value
-        const passcode = form.passcode.value
-        // loginFunction(login)
-        // redirect(`/storage`)
-    }
+        try {
+            const response: unknown = await signIn("credentials", {
+                email: form.email.value,
+                password: form.passcode.value,
+                redirect: false,
+            });
+            console.log({ response });
+            if (!response?.error) {
+                console.log("Login Successful");
+            }
 
+            if (!response?.ok) {
+                throw new Error("Network response was not ok");
+            }
+            toast.success("Login Successful");
+        } catch (error: any) {
+            console.error("Login Failed:", error);
+            toast.error("Login Failed");
+        }
+    };
     return (
         <Card className="w-[350px]">
             <CardHeader>
@@ -27,9 +46,9 @@ export function LoginCard() {
             <CardContent>
                 <form className="space-y-4" onSubmit={onSubmit}>
                     <Input
-                        type="text"
-                        placeholder="Login"
-                        name="login"
+                        type="email"
+                        placeholder="Email "
+                        name="email"
                         required
                     />
 

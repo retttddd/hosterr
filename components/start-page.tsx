@@ -29,7 +29,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { toast, Toaster } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {redirect} from "next/navigation";
+import {useRouter} from "next/router";
 
 /* ---------------- schema ---------------- */
 
@@ -47,6 +47,7 @@ type FormData = z.infer<typeof FormSchema>
 /* ---------------- page ---------------- */
 
 export function StartPage() {
+
   return (
       <ExampleWrapper>
         <Title>
@@ -60,7 +61,6 @@ export function StartPage() {
             <ArrowUpRightIcon />
           </Button>
         </Title>
-
         <StorageForm />
         <Toaster />
       </ExampleWrapper>
@@ -78,12 +78,12 @@ export function Title({ children }: { children: React.ReactNode }) {
 
 function StorageForm() {
   const [show, setShow] = React.useState(false)
-
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: "",
       status: undefined,
+      email: "",
       defaultUser: "",
       password: "",
       about: "",
