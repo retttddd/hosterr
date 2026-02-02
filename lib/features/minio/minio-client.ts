@@ -8,12 +8,13 @@ const minioClient = new Minio.Client({
     secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
 });
 
-export const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'test';
+export const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'qweqwe123123';
 
 export const initializeBucket = async () => {
     const bucketExists = await minioClient.bucketExists(BUCKET_NAME);
     if (!bucketExists) {
         await minioClient.makeBucket(BUCKET_NAME, 'us-east-1');
+
     }
 };
 

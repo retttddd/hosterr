@@ -1,11 +1,20 @@
 'use client';
-import React from "react";
+
+import React from 'react';
+import { useParams } from 'next/navigation';
 
 class FileInfo {
-    constructor(public name: string, public size: number, public lastModified: Date) {}
+    constructor(
+        public name: string,
+        public size: number,
+        public lastModified: Date
+    ) {}
 }
 
-export default function Storages() {
+export default function Storage() {
+    const params = useParams<{ slug: string }>();
+    const slug = params.slug;
+
     const [files, setFiles] = React.useState<FileInfo[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
@@ -13,8 +22,9 @@ export default function Storages() {
     const fetchFiles = async () => {
         try {
             setLoading(true);
-            const response = await fetch('/api/files');
+            const response = await fetch(`/api/minio/files?name=${slug}`);
             const data = await response.json();
+
             if (data.files) {
                 setFiles(data.files);
             }
@@ -27,12 +37,16 @@ export default function Storages() {
     };
 
     React.useEffect(() => {
-        fetchFiles();
-    }, []);
+        if (slug) {
+            fetchFiles();
+        }
+    }, [slug]);
 
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
 
     return (
-        <div>
+        <ul>
             {files.map((file) => (
                 <li
                     key={file.name}
@@ -41,6 +55,6 @@ export default function Storages() {
                     <span>{file.name}</span>
                 </li>
             ))}
-        </div>
+        </ul>
     );
 }

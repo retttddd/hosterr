@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import minioClient, { BUCKET_NAME } from '@/lib/minio-client';
+import minioClient, { BUCKET_NAME } from '@/lib/features/minio/minio-client';
 
 export async function DELETE(
     request: Request,

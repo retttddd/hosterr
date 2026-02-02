@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import minioClient, { BUCKET_NAME } from '@/lib/minio-client';
+import minioClient from '@/lib/features/minio/minio-client';
 
 interface FileInfo {
     name: string;
@@ -7,14 +7,18 @@ interface FileInfo {
     lastModified: Date;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const name = searchParams.get('name');
+        if (!name) return NextResponse.json({ error: 'No name provided' }, { status: 400 });
+
         const objects: FileInfo[] = [];
-        const stream = minioClient.listObjects(BUCKET_NAME, '', true);
+        const stream = minioClient.listObjects(name, '', true);
 
         for await (const obj of stream) {
             if (obj.name) {
-                const stat = await minioClient.statObject(BUCKET_NAME, obj.name);
+                const stat = await minioClient.statObject(name, obj.name);
                 objects.push({
                     name: obj.name,
                     size: stat.size,

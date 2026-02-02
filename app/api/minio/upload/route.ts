@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import minioClient, { BUCKET_NAME, initializeBucket } from '@/lib/minio-client';
+import minioClient, { BUCKET_NAME, initializeBucket } from '@/lib/features/minio/minio-client';
 import { Readable } from 'stream';
 
 export async function POST(request: NextRequest) {
