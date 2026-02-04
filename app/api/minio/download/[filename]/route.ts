@@ -16,7 +16,6 @@ export async function GET(
 
         const buffer = Buffer.concat(chunks);
 
-        // Get the object's metadata to set the correct content type
         const stat = await minioClient.statObject(BUCKET_NAME, filename);
 
         return new NextResponse(buffer, {

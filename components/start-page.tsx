@@ -25,34 +25,15 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowUpRightIcon, Eye, EyeOff } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
 import { toast, Toaster } from "sonner"
-import { zodResolver } from "@hookform/resolvers/zod"
-import {useRouter} from "next/router";
-
-/* ---------------- schema ---------------- */
-
-const FormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Email is required"),
-  status: z.enum(["active", "inactive", "suspended"]),
-  defaultUser: z.string().min(2, "Default user is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  about: z.string().optional(),
-})
-
-type FormData = z.infer<typeof FormSchema>
-
-/* ---------------- page ---------------- */
-
+import {redirect} from "next/navigation";
 export function StartPage() {
 
   return (
       <ExampleWrapper>
         <Title>
           Initialize new storage or connect existing
-          <Button size="sm">
+          <Button size="sm" onClick={() => redirect("/login")}>
             Login
             <ArrowUpRightIcon />
           </Button>
@@ -78,30 +59,32 @@ export function Title({ children }: { children: React.ReactNode }) {
 
 function StorageForm() {
   const [show, setShow] = React.useState(false)
-  const form = useForm<FormData>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      name: "",
-      status: undefined,
-      email: "",
-      defaultUser: "",
-      password: "",
-      about: "",
-    },
-  })
+  const [status, setStatus] = React.useState("active")
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const body = {
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      defaultUser: formData.get("defaultUser") as string,
+      status: status,
+      storageName: formData.get("name") as string,
+      about: formData.get("about") as string,
+    }
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       })
 
       if (!res.ok) throw new Error()
 
-      toast.success("Storage created successfully")
+      toast.success("storage created successfully")
       form.reset()
+      setStatus("active")
     } catch {
       toast.error("Creation failed")
     }
@@ -116,28 +99,24 @@ function StorageForm() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={onSubmit}>
               <FieldGroup>
                 <div className="grid grid-cols-2 gap-4">
                   <Field id="small-form-name" >
                     <FieldLabel>Name</FieldLabel>
-                    <Input placeholder="Storage name" id="small-form-name"  {...form.register("name")} />
-                    {form.formState.errors.name && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.name.message}
-                        </p>
-                    )}
+                    <Input
+                        type="text"
+                        name="name"
+                        placeholder="Storage name"
+                        id="small-form-name"
+                        required
+                    />
                   </Field>
-
-                  <Field>
+                  <Field id="status">
                     <FieldLabel>Status</FieldLabel>
-                    <Select
-                        onValueChange={(v) =>
-                            form.setValue("status", v as FormData["status"])
-                        }
-                    >
+                    <Select value={status} onValueChange={setStatus}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
@@ -147,28 +126,23 @@ function StorageForm() {
                         </SelectGroup>
                       </SelectContent>
                     </Select>
-                    {form.formState.errors.status && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.status.message}
-                        </p>
-                    )}
                   </Field>
-
                   <Field>
                     <FieldLabel>Default User</FieldLabel>
-                    <Input {...form.register("defaultUser")} />
-                    {form.formState.errors.defaultUser && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.defaultUser.message}
-                        </p>
-                    )}
+                    <Input
+                        name="defaultUser"
+                        placeholder="Enter default user"
+                        required
+                    />
                   </Field>
                   <Field>
                     <FieldLabel>Passcode</FieldLabel>
                     <div className="relative">
                       <Input
-                          {...form.register("password")}
+                          name="password"
+                          placeholder="Enter password"
                           type={show ? "text" : "password"}
+                          required
                           className="pr-10"
                       />
                       <Button
@@ -181,26 +155,21 @@ function StorageForm() {
                         {show ? <EyeOff /> : <Eye />}
                       </Button>
                     </div>
-                    {form.formState.errors.passcode && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.passcode.message}
-                        </p>
-                    )}
                   </Field>
                   <Field>
                     <FieldLabel>Email</FieldLabel>
-                    <Input {...form.register("email")} />
-                    {form.formState.errors.email && (
-                        <p className="text-sm text-red-500">
-                          {form.formState.errors.email.message}
-                        </p>
-                    )}
+                    <Input
+                        type="email"
+                        placeholder="Email"
+                        name="email"
+                        required
+                    />
                   </Field>
                 </div>
 
                 <Field>
                   <FieldLabel>About</FieldLabel>
-                  <Textarea {...form.register("about")} />
+                  <Textarea id="about" name="about" />
                 </Field>
 
                 <Field orientation="horizontal">

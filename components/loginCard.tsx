@@ -6,37 +6,40 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Eye, EyeOff } from "lucide-react"
 import {signIn} from "next-auth/react";
-import {useRouter} from "next/router";
 import {toast} from "sonner";
+import {useRouter} from "next/navigation";
 
 export function LoginCard() {
-    //const router = useRouter();
     const [show, setShow] = React.useState(false)
+
+    const router = useRouter()
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         const form = e.currentTarget
-        try {
-            const response: unknown = await signIn("credentials", {
-                email: form.email.value,
-                password: form.passcode.value,
-                redirect: false,
-            });
-            console.log({ response });
-            if (!response?.error) {
-                console.log("Login Successful");
-            }
+        const email = (form.elements.namedItem("email") as HTMLInputElement).value
+        const password = (form.elements.namedItem("passcode") as HTMLInputElement).value
 
-            if (!response?.ok) {
-                throw new Error("Network response was not ok");
-            }
-            toast.success("Login Successful");
-        } catch (error: any) {
-            console.error("Login Failed:", error);
-            toast.error("Login Failed");
+        const res = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+        })
+
+        if (!res) {
+            toast.error("Unexpected error")
+            return
         }
-    };
+
+        if (res.error) {
+            toast.error("Invalid email or password")
+            return
+        }
+
+        toast.success("Login successful")
+        router.push("/storage")
+    }
     return (
         <Card className="w-[350px]">
             <CardHeader>

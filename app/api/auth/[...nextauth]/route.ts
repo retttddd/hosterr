@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
 import { findUser } from "@/lib/features/db/users.repository";
 
-interface DBUser {
+export interface DBUser {
     id: number;
     name: string;
     email: string;
@@ -15,11 +15,9 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
-
     pages: {
         signIn: "/login",
     },
-
     providers: [
         CredentialsProvider({
             name: "Credentials",
