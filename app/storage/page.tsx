@@ -1,30 +1,29 @@
-import {Card, CardContent} from "@/components/ui/card";
-import {Title} from "@/components/start-page";
-import {StorageTable} from "@/components/storageTable";
-import {getServerSession} from "next-auth";
-import {redirect} from "next/navigation";
-import {getStorages, type Storage} from "@/lib/features/db/storages.repository";
+import { Card, CardContent } from "@/components/ui/card";
+import { Title } from "@/components/start-page";
+import { StorageTable } from "@/components/storageTable";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import React from "react";
-import {Header} from "@/components/header";
+import { Header } from "@/components/header";
+import { getStorageByEmail } from "@/lib/features/db/users.repository";
+import {getStorages, type Storage} from "@/lib/features/db/storages.repository"
 
+export default async function StoragePage() {
 
-export default async function storagePage() {
     const session = await getServerSession();
-    console.log(session)
-    if (!session) {
-        return redirect("/login");
+
+    if (!session || !session.user?.email) {
+        redirect("/login");
     }
 
-    const storages = [{ id: 1, name: "Storage 1", status: "Active", created_at: new Date() }]; //TODO replace with actual user ID
+    const storages = await getStorageByEmail(session.user.email);
 
     return (
         <>
             <Header />
-            <div className="flex flex-col gap-8 p-10 m-20">
-                <Title>
-                    Available storages
-                </Title>
 
+            <div className="flex flex-col gap-8 p-10 m-20">
+                <Title>Available storages</Title>
 
                 <Card className="w-full max-w-2xl">
                     <CardContent>

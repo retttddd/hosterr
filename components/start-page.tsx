@@ -26,15 +26,50 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowUpRightIcon, Eye, EyeOff } from "lucide-react"
 import { toast, Toaster } from "sonner"
-import {redirect} from "next/navigation";
-export function StartPage() {
+import { useRouter} from "next/navigation";
+export function StartPage({ session }: { session: any }) {
+  const router = useRouter();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleLoginButton = () => {
+    if (!session) {
+      router.push("/login");
+    } else {
+      router.push("/storage");
+    }
+  };
+
+  // Prevent hydration mismatch by ensuring consistent initial render
+  if (!mounted) {
+    return (
+      <ExampleWrapper>
+        <Title>
+          Initialize new storage or connect existing
+          <Button size="sm" onClick={() => handleLoginButton()}>
+            Login
+            <ArrowUpRightIcon />
+          </Button>
+          <Button size="sm" variant="outline">
+            Import existing
+            <ArrowUpRightIcon />
+          </Button>
+        </Title>
+        <StorageForm />
+        <Toaster />
+      </ExampleWrapper>
+    );
+  }
 
   return (
       <ExampleWrapper>
         <Title>
           Initialize new storage or connect existing
-          <Button size="sm" onClick={() => redirect("/login")}>
-            Login
+          <Button size="sm" onClick={() => handleLoginButton()}>
+            {session ? "Go to Storage" : "Login"}
             <ArrowUpRightIcon />
           </Button>
           <Button size="sm" variant="outline">

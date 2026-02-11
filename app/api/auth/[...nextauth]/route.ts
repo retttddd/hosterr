@@ -37,7 +37,6 @@ export const authOptions: NextAuthOptions = {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
-                console.log(credentials.email, credentials.password, 'testtest')
                 const user = (await findUser(credentials.email)) as unknown as DBUser | null;
                 if (!user) return null;
 

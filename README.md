@@ -6,7 +6,7 @@
 - [x] Add storage fetching 
 - [ ] Add memory calculation to database
 - [ ] Fetch real files
-  - [ ] Start classification
+- [ ] Start classification
 
 ## Run
 

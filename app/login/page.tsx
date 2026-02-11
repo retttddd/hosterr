@@ -7,11 +7,6 @@ import {Toaster} from "sonner";
 import * as React from "react";
 
 export default async function  loginPage() {
-    const session = await getServerSession();
-
-    if (session) {
-        redirect("/storage");
-    }
 
     return (
         <>

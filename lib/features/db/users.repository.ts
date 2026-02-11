@@ -1,14 +1,20 @@
 import sql from "./db";
 
-export async function createUser(name?: string, password?: string, email?: string) {
-    if (!name || !password || !email ) {
-        throw new Error("Name, password, email, and storageId are required");
+
+
+export async function getStorageByEmail(email: string) {
+    if (!email) {
+        throw new Error("Need email");
     }
-    return sql`
-    INSERT INTO users (name, password, email)
-    VALUES (${name}, ${password}, ${email})
-    RETURNING id
-  `;
+
+    const storages = await sql`
+        SELECT s.*
+        FROM storages s
+                 JOIN users u ON s.user_id = u.id
+        WHERE u.email = ${email}
+    `;
+
+    return storages;
 }
 
 export async function createUserWithStorage(
