@@ -16,7 +16,7 @@ import {
 type StorageFile = {
   name: string;
   size: number;
-  lastModified: Date;
+  lastModified: Date | string;
 };
 
 type StorageSidebarProps = {
