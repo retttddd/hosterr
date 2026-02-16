@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import minioClient, { BUCKET_NAME } from '@/lib/features/minio/minio-client';
+import minioClient, { DEFAULT_BUCKET_NAME, ensureBucketExists, resolveBucketName } from '@/lib/features/minio/minio-client';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: { filename: string } }
 ) {
     try {
+        const { searchParams } = new URL(request.url);
+        const bucketName = resolveBucketName(searchParams.get('name') || searchParams.get('bucketName') || DEFAULT_BUCKET_NAME);
+        await ensureBucketExists(bucketName);
+
         const filename = params.filename;
-        const objectStream = await minioClient.getObject(BUCKET_NAME, filename);
+        const objectStream = await minioClient.getObject(bucketName, filename);
 
         const chunks = [];
         for await (const chunk of objectStream) {
@@ -16,7 +20,7 @@ export async function GET(
 
         const buffer = Buffer.concat(chunks);
 
-        const stat = await minioClient.statObject(BUCKET_NAME, filename);
+        const stat = await minioClient.statObject(bucketName, filename);
 
         return new NextResponse(buffer, {
             headers: {

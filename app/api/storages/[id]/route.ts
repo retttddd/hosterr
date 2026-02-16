@@ -6,7 +6,9 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const id = params.id;
+        const paramId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+        const pathId = new URL(request.url).pathname.split("/").filter(Boolean).pop();
+        const id = paramId || pathId;
 
         if (!id || isNaN(Number(id))) {
             return NextResponse.json(

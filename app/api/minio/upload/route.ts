@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import minioClient, { BUCKET_NAME, initializeBucket } from '@/lib/features/minio/minio-client';
+import minioClient, { DEFAULT_BUCKET_NAME, ensureBucketExists, resolveBucketName } from '@/lib/features/minio/minio-client';
 import { Readable } from 'stream';
 
 export async function POST(request: NextRequest) {
     try {
-        // Initialize bucket if it doesn't exist
-        await initializeBucket();
-
         const data = await request.formData();
+        const bucketName = resolveBucketName((data.get('bucketName') || data.get('name') || DEFAULT_BUCKET_NAME) as string);
+        await ensureBucketExists(bucketName);
+
         const file = data.get('file') as File;
 
         if (!file) {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         const stream = Readable.from(buffer);
 
         await minioClient.putObject(
-            BUCKET_NAME,
+            bucketName,
             file.name,
             stream,
             buffer.length,
