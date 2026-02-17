@@ -22,6 +22,8 @@ type StorageFile = {
 type StorageSidebarProps = {
   storageName: string;
   files: StorageFile[];
+  selectedFilePath?: string;
+  onFileSelect?: (filePath: string) => void;
 };
 
 type MutableFolderNode = {
@@ -102,14 +104,14 @@ function getDisplayName(path: string) {
   return parts[parts.length - 1] ?? path;
 }
 
-export function StorageSidebar({ storageName, files }: StorageSidebarProps) {
+export function StorageSidebar({ storageName, files, selectedFilePath, onFileSelect }: StorageSidebarProps) {
   const { collapsed } = useSidebar();
   const tree = React.useMemo(() => buildFolderTree(files), [files]);
   const [openDirectories, setOpenDirectories] = React.useState<Record<string, boolean>>({});
 
-  const mockOpenFile = React.useCallback((filePath: string) => {
-    console.info(`[MOCK] open file: ${filePath}`);
-  }, []);
+  const handleFileSelect = React.useCallback((filePath: string) => {
+    onFileSelect?.(filePath);
+  }, [onFileSelect]);
 
   const mockOpenDirectory = React.useCallback((directoryPath: string) => {
     console.info(`[MOCK] open directory: ${directoryPath}`);
@@ -156,8 +158,10 @@ export function StorageSidebar({ storageName, files }: StorageSidebarProps) {
                   <li key={filePath}>
                     <button
                       type="button"
-                      onClick={() => mockOpenFile(filePath)}
-                      className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      onClick={() => handleFileSelect(filePath)}
+                      className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                        selectedFilePath === filePath ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                      }`}
                       style={{ paddingLeft: `${(depth + 1) * 12 + 8}px` }}
                       title={filePath}
                     >
@@ -173,6 +177,23 @@ export function StorageSidebar({ storageName, files }: StorageSidebarProps) {
       </li>
     );
   };
+
+  const renderFile = (filePath: string, depth = 0): React.ReactNode => (
+    <li key={filePath}>
+      <button
+        type="button"
+        onClick={() => handleFileSelect(filePath)}
+        className={`flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+          selectedFilePath === filePath ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+        }`}
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+        title={filePath}
+      >
+        <FileText className="h-3.5 w-3.5" />
+        <span className="truncate">{getDisplayName(filePath)}</span>
+      </button>
+    </li>
+  );
 
   return (
     <Sidebar>
@@ -208,10 +229,13 @@ export function StorageSidebar({ storageName, files }: StorageSidebarProps) {
                 Folder Structure
               </SidebarGroupLabel>
 
-              {tree.children.length === 0 ? (
+              {tree.children.length === 0 && tree.files.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No folders found</p>
               ) : (
-                <ul className="space-y-1">{tree.children.map((directory) => renderDirectory(directory))}</ul>
+                <ul className="space-y-1">
+                  {tree.children.map((directory) => renderDirectory(directory))}
+                  {tree.files.map((filePath) => renderFile(filePath))}
+                </ul>
               )}
             </SidebarGroup>
           </>
