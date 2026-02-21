@@ -36,6 +36,15 @@ export default function Storage() {
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
     const [textPreview, setTextPreview] = React.useState<string>("");
     const [previewError, setPreviewError] = React.useState<string>("");
+    const previewObjectUrlRef = React.useRef<string | null>(null);
+    const previewRequestIdRef = React.useRef(0);
+
+    const revokePreviewObjectUrl = React.useCallback(() => {
+        if (previewObjectUrlRef.current) {
+            URL.revokeObjectURL(previewObjectUrlRef.current);
+            previewObjectUrlRef.current = null;
+        }
+    }, []);
 
     React.useEffect(() => {
         if (!id) {
@@ -50,12 +59,14 @@ export default function Storage() {
 
     React.useEffect(() => {
         return () => {
+            revokePreviewObjectUrl();
             clearSelectedFile();
         };
-    }, [clearSelectedFile]);
+    }, [clearSelectedFile, revokePreviewObjectUrl]);
 
     React.useEffect(() => {
         if (!selectedFile) {
+            revokePreviewObjectUrl();
             setPreviewMode("empty");
             setPreviewUrl(null);
             setTextPreview("");
@@ -68,7 +79,7 @@ export default function Storage() {
         }
 
         const controller = new AbortController();
-        let objectUrl: string | null = null;
+        const requestId = ++previewRequestIdRef.current;
         setPreviewMode("loading");
         setPreviewUrl(null);
         setTextPreview("");
@@ -97,49 +108,88 @@ export default function Storage() {
                 }
 
                 const blob = await response.blob();
+                if (requestId !== previewRequestIdRef.current) {
+                    return;
+                }
                 const contentType = blob.type || selectedFile.type || "";
                 const extension = selectedFile.extension;
 
                 if (contentType.startsWith("image/")) {
-                    objectUrl = URL.createObjectURL(blob);
+                    revokePreviewObjectUrl();
+                    const objectUrl = URL.createObjectURL(blob);
+                    if (requestId !== previewRequestIdRef.current) {
+                        URL.revokeObjectURL(objectUrl);
+                        return;
+                    }
+                    previewObjectUrlRef.current = objectUrl;
                     setPreviewUrl(objectUrl);
                     setPreviewMode("image");
                     return;
                 }
 
                 if (contentType === "application/pdf" || extension === "pdf") {
-                    objectUrl = URL.createObjectURL(blob);
+                    revokePreviewObjectUrl();
+                    const objectUrl = URL.createObjectURL(blob);
+                    if (requestId !== previewRequestIdRef.current) {
+                        URL.revokeObjectURL(objectUrl);
+                        return;
+                    }
+                    previewObjectUrlRef.current = objectUrl;
                     setPreviewUrl(objectUrl);
                     setPreviewMode("pdf");
                     return;
                 }
 
                 if (contentType.startsWith("video/")) {
-                    objectUrl = URL.createObjectURL(blob);
+                    revokePreviewObjectUrl();
+                    const objectUrl = URL.createObjectURL(blob);
+                    if (requestId !== previewRequestIdRef.current) {
+                        URL.revokeObjectURL(objectUrl);
+                        return;
+                    }
+                    previewObjectUrlRef.current = objectUrl;
                     setPreviewUrl(objectUrl);
                     setPreviewMode("video");
                     return;
                 }
 
                 if (contentType.startsWith("audio/")) {
-                    objectUrl = URL.createObjectURL(blob);
+                    revokePreviewObjectUrl();
+                    const objectUrl = URL.createObjectURL(blob);
+                    if (requestId !== previewRequestIdRef.current) {
+                        URL.revokeObjectURL(objectUrl);
+                        return;
+                    }
+                    previewObjectUrlRef.current = objectUrl;
                     setPreviewUrl(objectUrl);
                     setPreviewMode("audio");
                     return;
                 }
 
                 if (contentType.startsWith("text/") || TEXT_EXTENSIONS.has(extension)) {
+                    revokePreviewObjectUrl();
                     const text = await blob.text();
+                    if (requestId !== previewRequestIdRef.current) {
+                        return;
+                    }
+                    setPreviewUrl(null);
                     setTextPreview(text);
                     setPreviewMode("text");
                     return;
                 }
 
+                revokePreviewObjectUrl();
+                setPreviewUrl(null);
                 setPreviewMode("unsupported");
             } catch (error) {
                 if (controller.signal.aborted) {
                     return;
                 }
+                if (requestId !== previewRequestIdRef.current) {
+                    return;
+                }
+                revokePreviewObjectUrl();
+                setPreviewUrl(null);
                 setPreviewMode("error");
                 setPreviewError(error instanceof Error ? error.message : "Preview error");
             }
@@ -149,11 +199,9 @@ export default function Storage() {
 
         return () => {
             controller.abort();
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl);
-            }
+            revokePreviewObjectUrl();
         };
-    }, [selectedFile, selectedStorage]);
+    }, [revokePreviewObjectUrl, selectedFile, selectedStorage]);
 
     const handleFileSelect = React.useCallback((filePath: string) => {
         const file = files.find((entry) => entry.name === filePath);
