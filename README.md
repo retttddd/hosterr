@@ -1,21 +1,17 @@
+# Hosterr
 
-## TODO: 
+This is a small app where people can sign up, log in, and manage their file storage.
+You can upload files, see what’s in your storage, and preview files in the app.
 
-- [ ] Add rate limiter
-- [x] Add log out 
-- [x] Add storage fetching 
-- [ ] Add memory calculation to database
-- [ ] Fetch real files
-- [ ] Start classification
+This also a showcase of next js minio implementation.
 
-## Run
+# Todo
+
+- [ ] Add file classification zero-shot model
+- [ ] Add net file view (Obsidian like)
+
+## Run it
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
