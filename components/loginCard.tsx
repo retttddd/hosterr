@@ -41,7 +41,7 @@ export function LoginCard() {
         router.push("/storage")
     }
     return (
-        <Card className="w-[350px]">
+        <Card className="w-full max-w-md">
             <CardHeader>
                 <CardTitle>Login</CardTitle>
             </CardHeader>

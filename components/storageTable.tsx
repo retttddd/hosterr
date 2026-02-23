@@ -63,9 +63,9 @@ export function StorageTable({ storages }: StorageTableProps) {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[100px]">Name</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead className="hidden sm:table-cell">Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -78,14 +78,14 @@ export function StorageTable({ storages }: StorageTableProps) {
                         <TableCell>
                             {storage.status ?? "Unknown"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                             {storage.created_at
                                 ? new Date(storage.created_at).toLocaleDateString()
                                 : "N/A"}
                         </TableCell>
                         <TableCell className="text-right">
                             <Button
-                                size="sm"
+                                size="xs"
                                 onClick={() => handleConnect(storage)}
                                 disabled={connectingStorageId === storage.id}
                             >

@@ -36,7 +36,7 @@ export function SidebarProvider({
       <div
         data-slot="sidebar-provider"
         data-collapsed={collapsed ? "true" : "false"}
-        className={cn("flex min-h-[calc(100vh-73px)] w-full", className)}
+        className={cn("flex min-h-[calc(100vh-73px)] w-full flex-col md:flex-row", className)}
       >
         {children}
       </div>

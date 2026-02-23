@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { Header } from "@/components/header";
 import { getStorageByEmail } from "@/lib/features/db/users.repository";
-import {getStorages, type Storage} from "@/lib/features/db/storages.repository"
+import { type Storage } from "@/lib/features/db/storages.repository"
 
 export default async function StoragePage() {
 
@@ -22,10 +22,10 @@ export default async function StoragePage() {
         <>
             <Header />
 
-            <div className="flex flex-col gap-8 p-10 m-20">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-10 lg:px-10">
                 <Title>Available storages</Title>
 
-                <Card className="w-full max-w-2xl">
+                <Card className="w-full max-w-4xl">
                     <CardContent>
                         <StorageTable storages={storages as unknown as Storage[]} />
                     </CardContent>

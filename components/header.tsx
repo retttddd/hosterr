@@ -25,9 +25,9 @@ export function Header({ showExitButton = false }: HeaderProps) {
 
   return (
     <header className="border-b">
-      <div className="flex items-center justify-between px-10 py-4">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4 lg:px-10">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl text-primary font-bold">Hoster</h1>
+          <h1 className="text-primary text-xl font-bold sm:text-2xl lg:text-3xl">Hoster</h1>
         </div>
         <div className="flex items-center gap-2">
           {showExitButton ? (
@@ -37,7 +37,7 @@ export function Header({ showExitButton = false }: HeaderProps) {
               className="flex items-center gap-2"
             >
               <DoorOpen className="h-4 w-4" />
-              Exit
+              <span className="hidden sm:inline">Exit</span>
             </Button>
           ) : null}
           <Button
@@ -46,7 +46,7 @@ export function Header({ showExitButton = false }: HeaderProps) {
             className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </div>

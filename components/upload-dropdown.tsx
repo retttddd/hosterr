@@ -97,7 +97,11 @@ export function UploadDropdown({ bucketName, onUploaded }: UploadDropdownProps) 
           Upload
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-96 p-3" align="end" onCloseAutoFocus={(event) => event.preventDefault()}>
+      <DropdownMenuContent
+        className="w-[calc(100vw-2rem)] max-w-[24rem] p-3 sm:w-96"
+        align="end"
+        onCloseAutoFocus={(event) => event.preventDefault()}
+      >
         <div className="space-y-3">
           <div
             onDrop={handleDrop}
@@ -176,4 +180,3 @@ export function UploadDropdown({ bucketName, onUploaded }: UploadDropdownProps) 
     </DropdownMenu>
   );
 }
-

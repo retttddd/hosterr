@@ -303,10 +303,10 @@ export default function Storage() {
             selectedFilePath={selectedFile?.path}
           />
 
-          <main className="flex-1 p-10">
-              <div className="mb-6 flex items-start justify-between gap-3">
+          <main className="flex-1 p-4 sm:p-6 lg:p-10">
+              <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row">
                   <div className="flex min-w-0 flex-col gap-2">
-                    <h1 className="truncate text-2xl font-bold">{selectedFile?.path ?? ""}</h1>
+                    <h1 className="truncate text-lg font-bold sm:text-2xl">{selectedFile?.path ?? ""}</h1>
                     {selectedFile ? (
                       <div className="flex flex-wrap items-center gap-2">
                         <Button
@@ -341,20 +341,20 @@ export default function Storage() {
                       </div>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center justify-start gap-2 md:w-auto md:justify-end">
                       <UploadDropdown bucketName={selectedStorage.name} onUploaded={addFiles} />
                   </div>
               </div>
-              <section className="bg-muted/20 min-h-[420px] rounded-xl border p-4">
+              <section className="bg-muted/20 min-h-[320px] rounded-xl border p-3 sm:min-h-[420px] sm:p-4">
                 {previewMode === "empty" ? (
-                  <div className="text-muted-foreground flex h-[380px] flex-col items-center justify-center gap-2">
+                  <div className="text-muted-foreground flex h-[260px] flex-col items-center justify-center gap-2 sm:h-[380px]">
                     <FileSearch className="h-8 w-8" />
                     <p className="text-sm">Select a file in the left panel to preview it.</p>
                   </div>
                 ) : null}
 
                 {previewMode === "loading" ? (
-                  <div className="text-muted-foreground flex h-[380px] items-center justify-center gap-2">
+                  <div className="text-muted-foreground flex h-[260px] items-center justify-center gap-2 sm:h-[380px]">
                     <LoaderCircle className="h-5 w-5 animate-spin" />
                     <p className="text-sm">Loading preview...</p>
                   </div>
@@ -379,20 +379,20 @@ export default function Storage() {
                 ) : null}
 
                 {previewMode === "audio" && previewUrl ? (
-                  <div className="flex h-[380px] items-center justify-center">
+                  <div className="flex h-[260px] items-center justify-center sm:h-[380px]">
                     <audio src={previewUrl} controls className="w-full max-w-lg" />
                   </div>
                 ) : null}
 
                 {previewMode === "unsupported" ? (
-                  <div className="text-muted-foreground flex h-[380px] flex-col items-center justify-center gap-2">
+                  <div className="text-muted-foreground flex h-[260px] flex-col items-center justify-center gap-2 sm:h-[380px]">
                     <FileQuestion className="h-8 w-8" />
                     <p className="text-sm">Preview is not available for this file type.</p>
                   </div>
                 ) : null}
 
                 {previewMode === "error" ? (
-                  <div className="text-muted-foreground flex h-[380px] flex-col items-center justify-center gap-2">
+                  <div className="text-muted-foreground flex h-[260px] flex-col items-center justify-center gap-2 sm:h-[380px]">
                     <FileQuestion className="h-8 w-8" />
                     <p className="text-sm">Could not open file preview.</p>
                     <p className="text-xs">{previewError}</p>
