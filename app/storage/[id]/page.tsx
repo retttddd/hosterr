@@ -8,7 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useStorageStore } from "@/lib/stores/storage-store";
 import { UploadDropdown } from "@/components/upload-dropdown";
 import { useSelectedFileStore } from "@/lib/stores/selected-file-store";
-import { FileQuestion, FileSearch, LoaderCircle, X } from "lucide-react";
+import { Download, FileQuestion, FileSearch, LoaderCircle, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type PreviewMode = "empty" | "loading" | "image" | "pdf" | "text" | "video" | "audio" | "unsupported" | "error";
@@ -28,6 +28,7 @@ export default function Storage() {
     const selectedStorage = useStorageStore((state) => state.selectedStorage);
     const files = useStorageStore((state) => state.files);
     const addFiles = useStorageStore((state) => state.addFiles);
+    const setFiles = useStorageStore((state) => state.setFiles);
     const selectedFile = useSelectedFileStore((state) => state.selectedFile);
     const setSelectedFile = useSelectedFileStore((state) => state.setSelectedFile);
     const clearSelectedFile = useSelectedFileStore((state) => state.clearSelectedFile);
@@ -36,6 +37,8 @@ export default function Storage() {
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
     const [textPreview, setTextPreview] = React.useState<string>("");
     const [previewError, setPreviewError] = React.useState<string>("");
+    const [isDownloading, setIsDownloading] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
     const previewObjectUrlRef = React.useRef<string | null>(null);
     const previewRequestIdRef = React.useRef(0);
 
@@ -219,6 +222,71 @@ export default function Storage() {
         });
     }, [files, setSelectedFile]);
 
+    const handleDownloadFile = React.useCallback(async () => {
+        if (!selectedFile?.path || !selectedStorage || isDownloading) {
+            return;
+        }
+
+        setIsDownloading(true);
+        try {
+            const encodedPath = selectedFile.path
+                .split("/")
+                .filter(Boolean)
+                .map((segment) => encodeURIComponent(segment))
+                .join("/");
+
+            const response = await fetch(`/api/minio/download/${encodedPath}`, {
+                headers: {
+                    "x-storage-name": selectedStorage.name,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Could not download file");
+            }
+
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = objectUrl;
+            anchor.download = selectedFile.name;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(objectUrl);
+        } catch (error) {
+            console.error("Download failed:", error);
+        } finally {
+            setIsDownloading(false);
+        }
+    }, [isDownloading, selectedFile, selectedStorage]);
+
+    const handleDeleteFile = React.useCallback(async () => {
+        if (!selectedFile?.path || !selectedStorage || isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const encodedPath = encodeURIComponent(selectedFile.path);
+            const query = new URLSearchParams({ name: selectedStorage.name });
+            const response = await fetch(`/api/minio/delete/${encodedPath}?${query.toString()}`, {
+                method: "DELETE",
+            });
+
+            if (!response.ok) {
+                throw new Error("Could not delete file");
+            }
+
+            setFiles(files.filter((file) => file.name !== selectedFile.path));
+            clearSelectedFile();
+        } catch (error) {
+            console.error("Delete failed:", error);
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [clearSelectedFile, files, isDeleting, selectedFile, selectedStorage, setFiles]);
+
     if (!id || !selectedStorage || String(selectedStorage.id) !== id) {
         return null;
     }
@@ -236,10 +304,31 @@ export default function Storage() {
           />
 
           <main className="flex-1 p-10">
-              <div className="mb-6 flex items-center justify-between gap-3">
-                  <h1 className="text-2xl font-bold">{selectedFile?.path ?? ""}</h1>
-                  <div className="flex items-center gap-2">
-                      {selectedFile ? (
+              <div className="mb-6 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-col gap-2">
+                    <h1 className="truncate text-2xl font-bold">{selectedFile?.path ?? ""}</h1>
+                    {selectedFile ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleDownloadFile}
+                          disabled={isDownloading}
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          {isDownloading ? "Downloading..." : "Download"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={handleDeleteFile}
+                          disabled={isDeleting}
+                          className="flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </Button>
                         <Button
                           type="button"
                           variant="outline"
@@ -249,7 +338,10 @@ export default function Storage() {
                           <X className="h-4 w-4" />
                           Close file
                         </Button>
-                      ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-2">
                       <UploadDropdown bucketName={selectedStorage.name} onUploaded={addFiles} />
                   </div>
               </div>
