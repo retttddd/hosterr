@@ -7,6 +7,7 @@ import { StorageSidebar } from "@/components/storage-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useStorageStore } from "@/lib/stores/storage-store";
 import { UploadDropdown } from "@/components/upload-dropdown";
+import { ClassifyDropdown } from "@/components/classify-dropdown";
 import { useSelectedFileStore } from "@/lib/stores/selected-file-store";
 import { Download, FileQuestion, FileSearch, LoaderCircle, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -342,6 +343,7 @@ export default function Storage() {
                     ) : null}
                   </div>
                   <div className="flex w-full items-center justify-start gap-2 md:w-auto md:justify-end">
+                      <ClassifyDropdown files={files} />
                       <UploadDropdown bucketName={selectedStorage.name} onUploaded={addFiles} />
                   </div>
               </div>
